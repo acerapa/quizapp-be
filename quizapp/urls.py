@@ -22,4 +22,5 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', landing_page, name='landing_page'),
     path('api/users/', include(('users.urls', 'users'), namespace='users')),
+    path('api/quizes/', include(('quizes.urls', 'quizes'), namespace='quizes')),
 ]
