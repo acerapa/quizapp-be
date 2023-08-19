@@ -72,7 +72,8 @@ def quiz(request, quiz_id):
                 quizSettingSerializer.save()
 
                 data = {
-                    'update': True
+                    'quiz': QuizSerializer(quiz).data,
+                    'updated': True
                 }
             else:
                 return Response(quizSettingSerializer.errors, status=400)
