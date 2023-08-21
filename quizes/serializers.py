@@ -10,7 +10,7 @@ class QuizSettingSerializer(serializers.ModelSerializer):
 class QuestionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Question
-        fields = ('quiz_id', 'description', 'choices', 'answer', 'deleted_at')
+        fields = ('id', 'quiz_id', 'description', 'choices', 'type', 'answer')
 
 class QuizSerializer(serializers.ModelSerializer):
     quizsetting_set = QuizSettingSerializer(many=True, read_only=True)

@@ -13,10 +13,12 @@ from .models import Quiz, QuizSetting, Question
 def quizes(request):
     quiz = None
     quiz_setting = None
+    questions = None
 
     if request.method == 'POST':
         quizSerializer = QuizSerializer(data=request.data['quiz'])
         quiz_setting_data = request.data['setting']
+        questions = request.data['questions']
 
         if quizSerializer.is_valid():
             quiz = quizSerializer.save()
@@ -24,16 +26,27 @@ def quizes(request):
             quiz_setting_data['quiz_id'] = quiz.id
             quizSettingSerializer = QuizSettingSerializer(data=quiz_setting_data)
             if quizSettingSerializer.is_valid():
-                quiz_setting = quizSettingSerializer.save()
+                quizSettingSerializer.save()
             else:
                 return Response(quizSettingSerializer.errors, status=400)
+            
+            for question in questions:
+                question['quiz_id'] = quiz.id
+
+            questions = QuestionSerializer(data=request.data['questions'], many=True)
+            if questions.is_valid():
+                questions.save()
+            else:
+                return Response(questions.errors, status=400)
         else:
             return Response(quizSerializer.errors, status=400)
 
         data = {
             'quiz': QuizSerializer(quiz).data,
-            'setting': QuizSettingSerializer(quiz_setting).data
         }
+
+        if questions != None:
+            data['questions'] = questions.data
 
     elif request.method == 'GET':
         quizes = Quiz.objects.filter(
@@ -49,7 +62,7 @@ def quizes(request):
 
     return Response(data, status=200)
 
-@api_view(['GET', 'PUT'])
+@api_view(['GET', 'PUT', 'DELETE'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def quiz(request, quiz_id):
@@ -87,16 +100,27 @@ def quiz(request, quiz_id):
             'quiz': QuizSerializer(quiz).data
         }
 
+    elif request.method == 'DELETE':
+        Quiz.objects.delete(quiz_id)
+
+        data = {
+            'deleted': True
+        }
+
     return Response(data, status=200)
 
-@api_view(['POST'])
+@api_view(['GET','POST'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def questions(request):
-    questionSerializer = QuestionSerializer(request.data)
-
-    if questionSerializer.is_valid():
-        question = questionSerializer.save()
-        return Response({'success': True}, status=200)
-    else:
-        Response(questionSerializer.errors, status=400)
+    if request.method == 'POST':
+        questionSerializer = QuestionSerializer(request.data)
+        if questionSerializer.is_valid():
+            questionSerializer.save()
+            return Response({'success': True}, status=200)
+        else:
+            Response(questionSerializer.errors, status=400)
+    elif request.method == 'GET':
+        questions = Question.objects.filter(quiz_id=request.data['quiz_id'])
+        questionSerializer = QuestionSerializer(questions)
+        return Response(questionSerializer.data, status=200)
