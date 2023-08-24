@@ -38,8 +38,15 @@ class QuizParticipant(models.Model):
 
 # Create a Question model
 class Question(models.Model):
+    class Type(models.TextChoices):
+        multiple_choice = 'multiple-choice'
+        enumeration = 'enumeration'
+        explanation = 'explanation'
+        select = 'select'
+        true_or_false = 'true-or-false'
+
     description = models.TextField()
     quiz_id = models.ForeignKey(Quiz, on_delete=models.CASCADE)
-    choices = models.JSONField()
-    answer = models.CharField(max_length=255)
-    type = models.CharField(max_length=255)
+    choices = models.TextField()
+    answer = models.CharField(max_length=255, null=True)
+    type = models.CharField(max_length=255, choices=Type.choices)
