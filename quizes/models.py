@@ -47,6 +47,6 @@ class Question(models.Model):
 
     description = models.TextField()
     quiz_id = models.ForeignKey(Quiz, on_delete=models.CASCADE)
-    choices = models.TextField()
-    answer = models.CharField(max_length=255, null=True)
+    choices = models.TextField(null=True)
+    answer = models.CharField(max_length=255, null=True, blank=True)
     type = models.CharField(max_length=255, choices=Type.choices)

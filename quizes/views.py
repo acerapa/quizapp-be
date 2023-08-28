@@ -101,7 +101,7 @@ def quiz(request, quiz_id):
         }
 
     elif request.method == 'DELETE':
-        Quiz.objects.delete(quiz_id)
+        Quiz.objects.get(id=quiz_id).delete()
 
         data = {
             'deleted': True
@@ -109,18 +109,29 @@ def quiz(request, quiz_id):
 
     return Response(data, status=200)
 
-@api_view(['GET','POST'])
+@api_view(['GET', 'POST', 'PUT', 'DELETE'])
 @authentication_classes([JWTAuthentication])
 @permission_classes([IsAuthenticated])
 def questions(request):
     if request.method == 'POST':
-        questionSerializer = QuestionSerializer(request.data)
+        questionSerializer = QuestionSerializer(data=request.data)
         if questionSerializer.is_valid():
             questionSerializer.save()
             return Response({'success': True}, status=200)
         else:
-            Response(questionSerializer.errors, status=400)
+            return Response(questionSerializer.errors, status=400)
     elif request.method == 'GET':
         questions = Question.objects.filter(quiz_id=request.data['quiz_id'])
         questionSerializer = QuestionSerializer(questions)
         return Response(questionSerializer.data, status=200)
+    elif request.method == 'DELETE':
+        Question.objects.get(id=request.data['question_id']).delete()
+        return Response({'deleted': True}, status=200)
+    elif request.method == 'PUT':
+        question = Question.objects.get(id=request.data['question_id'])
+        questionSerializer = QuestionSerializer(question, data=request.data)
+        if questionSerializer.is_valid():
+            questionSerializer.save()
+            return Response({'success': True}, status=200)
+        else:
+            return Response(questionSerializer.errors, status=400)
