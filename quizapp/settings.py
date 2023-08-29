@@ -219,3 +219,4 @@ SIMPLE_JWT = {
 
 # Mimetypes
 mimetypes.add_type("text/css", ".css", True)
+mimetypes.add_type("text/html", ".html", True)
